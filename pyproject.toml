@@ -4,11 +4,24 @@ version = "0.1.0"
 description = ""
 readme = "README.md"
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "matplotlib>=3.10.9",
+    "numpy>=2.4.6",
+    "pandas>=3.0.3",
+    "scipy>=1.17.1",
+]
+
+[tool.poe.tasks]
+start = "uv run --with jupyter jupyter lab"
+
+[tool.ruff.lint]
+ignore = ["E731"]
 
 [dependency-groups]
 dev = [
     "ipykernel>=7.2.0",
+    "poethepoet>=0.46.0",
     "ruff>=0.15.16",
+    "ty>=0.0.44",
     "uv>=0.11.19",
 ]
