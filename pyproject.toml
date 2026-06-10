@@ -9,6 +9,7 @@ dependencies = [
     "numpy>=2.4.6",
     "pandas>=3.0.3",
     "scipy>=1.17.1",
+    "seaborn>=0.13.2",
 ]
 
 [tool.poe.tasks]

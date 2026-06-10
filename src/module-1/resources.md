@@ -17,3 +17,4 @@
 
 - [b001](https://www.youtube.com/@b001)
 - [Net Ninja](https://www.youtube.com/@NetNinja)
+- [Computerphile](https://www.youtube.com/@Computerphile)

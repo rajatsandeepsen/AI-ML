@@ -1,0 +1,13 @@
+student_id,age,gender,study_hours,sleep_hours,daily_screen_time,attendance_percent,exam_score,city,score_level
+S001,20,Male,3.5,7.0,4.0,88.0,78.0,Delhi,Good
+S002,21,Female,4.2,6.5,5.5,92.0,84.0,Mumbai,Good
+S003,19,Female,2.8,7.8,6.1,75.0,69.0,Bengaluru,Average
+S004,22,Male,5.0,5.9,3.2,95.0,91.0,Chennai,Excellent
+S005,20,Female,3.5,6.8,4.8,82.0,76.0,Pune,Good
+S006,23,Male,3.1,7.0,7.5,68.0,64.0,Hyderabad,Average
+S007,21,Female,4.8,7.2,3.9,90.0,88.0,Kolkata,Good
+S008,20,Male,2.2,8.1,6.8,70.0,61.0,Delhi,Average
+S009,22,Female,5.5,6.0,5.0,97.0,93.0,Mumbai,Excellent
+S010,19,Male,3.0,7.4,5.0,86.0,72.0,Jaipur,Average
+S011,21,Female,4.0,6.9,4.3,86.0,76.0,Lucknow,Good
+S012,20,Male,2.5,7.6,6.4,74.0,66.0,Chandigarh,Average
