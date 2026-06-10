@@ -1,5 +1,5 @@
 from sklearn.datasets import load_iris
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, mean_squared_error
 from sklearn.model_selection import train_test_split
 from sklearn.neighbors import KNeighborsClassifier
 
@@ -37,3 +37,6 @@ for sample in range(len(y_test)):
         " \t\t│",
         result,
     )
+
+mse = mean_squared_error(y_test, y_predict)
+print("Mean Square Error:", mse)
