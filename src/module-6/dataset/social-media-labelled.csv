@@ -1,0 +1,11 @@
+user_id,visit_score,spending_rank,label
+0,60,20,adult_male
+1,61,19,adult_male
+2,38,66,adult_female
+3,40,67,adult_female
+4,22,23,young_female
+5,24,25,young_female
+6,90,20,young_male
+7,88,18,young_male
+8,80,86,elder
+9,78,85,elder
