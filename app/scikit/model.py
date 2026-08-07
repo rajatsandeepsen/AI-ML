@@ -3,30 +3,34 @@ from __future__ import annotations
 from pathlib import Path
 
 import joblib
-from sklearn.datasets import fetch_openml
+import numpy as np
+from datasets import load_dataset
+from numpy.typing import NDArray
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score
-from sklearn.model_selection import train_test_split
 
 # 1)
-x, y = fetch_openml("mnist_784", version=1, as_frame=False, return_X_y=True)
-print("Dataset Loaded")
+data = load_dataset("p2pfl/MNIST").with_format("numpy")
 
-# 2)
-x = x / 255.0
-y = y.astype(int)
+train_ds = data["train"]
+test_ds = data["test"]
 
-# 3)
-x_train, x_test, y_train, y_test = train_test_split(
-    x,
-    y,
-    test_size=0.2,
-    random_state=42,
-)
+x_train: NDArray[np.float32] = np.asarray(train_ds["image"], dtype=np.float32)
+x_test: NDArray[np.float32] = np.asarray(test_ds["image"], dtype=np.float32)
+
+y_train: NDArray[np.int64] = np.asarray(train_ds["label"], dtype=np.int64)
+y_test: NDArray[np.int64] = np.asarray(test_ds["label"], dtype=np.int64)
+
+x_train = x_train.reshape(x_train.shape[0], -1) / 255.0
+x_test = x_test.reshape(x_test.shape[0], -1) / 255.0
+
 print("Dataset Splitted")
 
 # 4)
-model = LogisticRegression(max_iter=200)
+model = LogisticRegression(
+    max_iter=200,
+    n_jobs=-1,
+)
 print("Model Created")
 
 
@@ -45,3 +49,5 @@ download_path = base_dir / "model.joblib"
 # 7) Save model
 joblib.dump(model, download_path)
 print("Model saved as model.joblib")
+
+# uv run ./app/scikit/model.py

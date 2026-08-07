@@ -29,3 +29,5 @@ classes = model.classes_.tolist()
 
 for cls, prob in zip(classes, probabilities):
     print(cls, ":", round(prob, 3))
+
+# uv run ./app/scikit/test.py

@@ -54,4 +54,4 @@ def predict(payload: PredictRequest) -> dict[str, object]:
     }
 
 
-# uv run fastapi run ./src/production/scikit/server.py
+# uv run fastapi run ./app/scikit/server.py
