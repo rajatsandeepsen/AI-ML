@@ -2,7 +2,25 @@
 
 ![QR For this Repo](/qr.png)
 
-## Install Installation
+## Install 
+
+Follow [Jupyter Lab](https://jupyter.org/install) guide and install
+
+```bash
+pip install jupyterlab
+
+jupyter lab
+```
+
+Jupyter Notebook (simpler UI)
+
+```bash
+pip install notebook
+
+jupyter notebook
+```
+
+## Install Installation (Advanced)
 
 [UV Installation](https://docs.astral.sh/uv/getting-started/installation/) Guide
 
