@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MNIST Camera Detector</title>
+  <style>
+    body {
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      margin: 0;
+      padding: 24px;
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+
+    .wrap {
+      max-width: 980px;
+      margin: 0 auto;
+      display: grid;
+      gap: 16px;
+    }
+
+    .card {
+      background: #111827;
+      border: 1px solid #1f2937;
+      border-radius: 12px;
+      padding: 16px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 22px;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    video, canvas {
+      width: 100%;
+      border-radius: 8px;
+      border: 1px solid #334155;
+      background: black;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    button {
+      padding: 10px 14px;
+      border-radius: 8px;
+      border: 1px solid #334155;
+      background: #1e293b;
+      color: #e2e8f0;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #334155;
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .result {
+      font-size: 18px;
+      margin-top: 10px;
+    }
+
+    .probs {
+      margin-top: 8px;
+      display: grid;
+      gap: 4px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+
+    .muted {
+      color: #94a3b8;
+      font-size: 13px;
+    }
+
+    @media (max-width: 860px) {
+      .row {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <div class="muted">Digital Handwriting Detector (Browser)</div>
+      <div class="toolbar">
+        <button id="enableCameraBtn">Enable Camera</button>
+        <button id="predictBtn" disabled>Predict</button>
+      </div>
+      <div class="muted" id="cameraStatus">Camera is off. Click “Enable Camera”.</div>
+    </div>
+
+    <div class="row">
+      <div class="card">
+        <div class="muted" style="margin-bottom:8px;">Camera feed</div>
+        <video id="video" autoplay playsinline></video>
+      </div>
+
+      <div class="card">
+        <div class="muted" style="margin-bottom:8px;">Processed 28x28 preview (scaled)</div>
+        <canvas id="preview" width="280" height="280"></canvas>
+        <div class="result" id="result">Prediction: -</div>
+        <div class="probs" id="probs"></div>
+      </div>
+    </div>
+  </div>
+
+  <canvas id="work" width="280" height="280" style="display:none;"></canvas>
+  <canvas id="small" width="28" height="28" style="display:none;"></canvas>
+
+  <script>
+    const video = document.getElementById('video');
+    const preview = document.getElementById('preview');
+    const work = document.getElementById('work');
+    const small = document.getElementById('small');
+
+    const enableCameraBtn = document.getElementById('enableCameraBtn');
+    const predictBtn = document.getElementById('predictBtn');
+    const resultEl = document.getElementById('result');
+    const probsEl = document.getElementById('probs');
+    const cameraStatusEl = document.getElementById('cameraStatus');
+
+    const workCtx = work.getContext('2d', { willReadFrequently: true });
+    const smallCtx = small.getContext('2d', { willReadFrequently: true });
+    const previewCtx = preview.getContext('2d');
+
+    let cameraReady = false;
+
+    function setCameraStatus(message) {
+      cameraStatusEl.textContent = message;
+    }
+
+    async function startCamera() {
+      if (!window.isSecureContext) {
+        setCameraStatus('Camera requires https:// or localhost.');
+        resultEl.textContent = 'Error: insecure context for camera access';
+        return;
+      }
+
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        setCameraStatus('Camera API is not available in this browser.');
+        resultEl.textContent = 'Error: camera not supported in this browser';
+        return;
+      }
+
+      try {
+        setCameraStatus('Requesting camera permission...');
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: 'environment' },
+          audio: false,
+        });
+
+        video.srcObject = stream;
+        cameraReady = true;
+        predictBtn.disabled = false;
+        setCameraStatus('Camera is on.');
+      } catch (error) {
+        cameraReady = false;
+        predictBtn.disabled = true;
+        setCameraStatus('Camera permission denied or unavailable.');
+        resultEl.textContent = `Error: ${error.message || error}`;
+      }
+    }
+
+    function to28x28Pixels() {
+      const vw = video.videoWidth;
+      const vh = video.videoHeight;
+      if (!vw || !vh) {
+        throw new Error('camera not ready');
+      }
+
+      const size = Math.min(vw, vh);
+      const sx = Math.floor((vw - size) / 2);
+      const sy = Math.floor((vh - size) / 2);
+
+      workCtx.drawImage(video, sx, sy, size, size, 0, 0, 280, 280);
+
+      const workImage = workCtx.getImageData(0, 0, 280, 280);
+      const data = workImage.data;
+
+      for (let i = 0; i < data.length; i += 4) {
+        const r = data[i];
+        const g = data[i + 1];
+        const b = data[i + 2];
+        const gray = 0.299 * r + 0.587 * g + 0.114 * b;
+        data[i] = gray;
+        data[i + 1] = gray;
+        data[i + 2] = gray;
+      }
+
+      workCtx.putImageData(workImage, 0, 0);
+
+      smallCtx.drawImage(work, 0, 0, 28, 28);
+      const smallImage = smallCtx.getImageData(0, 0, 28, 28);
+      const pixels = [];
+
+      let sum = 0;
+      for (let i = 0; i < smallImage.data.length; i += 4) {
+        sum += smallImage.data[i];
+      }
+      const mean = sum / 784;
+      const invert = mean > 127;
+
+      for (let i = 0; i < smallImage.data.length; i += 4) {
+        let v = smallImage.data[i];
+        if (invert) v = 255 - v;
+        pixels.push(v);
+        smallImage.data[i] = v;
+        smallImage.data[i + 1] = v;
+        smallImage.data[i + 2] = v;
+        smallImage.data[i + 3] = 255;
+      }
+
+      smallCtx.putImageData(smallImage, 0, 0);
+
+      previewCtx.imageSmoothingEnabled = false;
+      previewCtx.clearRect(0, 0, 280, 280);
+      previewCtx.drawImage(small, 0, 0, 280, 280);
+
+      return pixels;
+    }
+
+    async function runPrediction() {
+      if (!cameraReady) {
+        resultEl.textContent = 'Error: camera is not enabled';
+        return;
+      }
+
+      try {
+        const pixels = to28x28Pixels();
+        const res = await fetch('/predict', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ pixels }),
+        });
+
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.detail || 'prediction failed');
+        }
+
+        resultEl.textContent = `Prediction: ${data.prediction}`;
+
+        probsEl.innerHTML = '';
+        data.probabilities.forEach((p, i) => {
+          const row = document.createElement('div');
+          row.textContent = `${i}: ${Number(p).toFixed(3)}`;
+          probsEl.appendChild(row);
+        });
+      } catch (error) {
+        resultEl.textContent = `Error: ${error}`;
+      }
+    }
+
+    enableCameraBtn.addEventListener('click', startCamera);
+    predictBtn.addEventListener('click', runPrediction);
+  </script>
+</body>
+</html>

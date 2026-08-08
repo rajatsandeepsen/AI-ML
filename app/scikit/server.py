@@ -5,12 +5,14 @@ from pathlib import Path
 import joblib
 import numpy as np
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 
 app = FastAPI()
 
 base_dir = Path(__file__).resolve().parent
 download_path = base_dir / "model.joblib"
+html_path = base_dir / "index.html"
 model = joblib.load(download_path)
 
 
@@ -31,6 +33,11 @@ def _to_input_array(pixels: list[float]) -> np.ndarray:
 @app.get("/health")
 def health() -> dict[str, str]:
     return {"status": "ok"}
+
+
+@app.get("/", response_class=HTMLResponse)
+def home() -> HTMLResponse:
+    return HTMLResponse(content=html_path.read_text(encoding="utf-8"))
 
 
 @app.post("/predict")
