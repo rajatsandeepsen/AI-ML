@@ -1,6 +1,6 @@
 # AI & ML Training
 
-![QR For this Repo](/qr.png)
+<img width="400" height="400" alt="qr" src="https://github.com/user-attachments/assets/9de87d9c-44bc-47db-b3f2-75a914313ec4" />
 
 ## Install 
 
